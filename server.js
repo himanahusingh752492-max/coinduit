@@ -11,26 +11,51 @@ const otpStore = {};
 const nodemailer = require("nodemailer");
 
 const sendOTPEmail = async (email, otp) => {
-  const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 587,
-    secure: false,
-    requireTLS: true,
-    auth: {
-      user: process.env.EMAIL,
-      pass: process.env.EMAIL_PASSWORD,
-    },
-    tls: {
-      rejectUnauthorized: false,
-    },
-  });
+  try {
 
-  await transporter.sendMail({
-    from: `"CoinDuit" <${process.env.EMAIL}>`,
-    to: email,
-    subject: "CoinDuit OTP",
-    text: `Your OTP is ${otp}. It is valid for 5 minutes.`,
-  });
+    const transporter = nodemailer.createTransport({
+
+      host: "smtp.gmail.com",
+      port: 587,
+      secure: false,
+
+      family: 4, // IPv4 force (Render ENETUNREACH fix)
+
+      requireTLS: true,
+
+      auth: {
+        user: process.env.EMAIL,
+        pass: process.env.EMAIL_PASSWORD,
+      },
+
+      tls: {
+        rejectUnauthorized: false,
+      },
+
+    });
+
+
+    await transporter.sendMail({
+
+      from: `"CoinDuit" <${process.env.EMAIL}>`,
+
+      to: email,
+
+      subject: "CoinDuit OTP Verification",
+
+      text: `Your CoinDuit OTP is ${otp}. It is valid for 5 minutes.`,
+
+    });
+
+
+    console.log("OTP sent successfully to:", email);
+
+
+  } catch (error) {
+
+    console.log("OTP ERROR:", error.message);
+
+  }
 };
 app.use(cors());
 app.use(express.json());
@@ -296,7 +321,7 @@ app.post("/forgot/send-otp", async (req, res) => {
       otp,
       expires: Date.now() + 5 * 60 * 1000,
     };
-
+console.log("Sending OTP to:", email);
     await sendOTPEmail(email, otp);
 
     res.json({ message: "OTP sent to email" });
@@ -432,8 +457,8 @@ app.post("/referral/apply", async (req, res) => {
       });
     }
 
-    user.coins += 50;
-    refUser.coins += 50;
+    user.coins += 30;
+    refUser.coins += 30;
 
     user.referredBy = referralCode;
 
@@ -441,7 +466,7 @@ app.post("/referral/apply", async (req, res) => {
     await refUser.save();
 
     res.json({
-      message: "Referral applied successfully. +50 Coins",
+      message: "Referral applied successfully. +30 Coins",
       userCoins: user.coins,
     });
   } catch (error) {
