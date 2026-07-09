@@ -11,7 +11,7 @@ const otpStore = {};
 const nodemailer = require("nodemailer");
 const sendOTPEmail = async (email, otp) => {
   try {
-
+   console.log("OTP START");
     const transporter = nodemailer.createTransport({
 
       service: "gmail",
@@ -26,7 +26,7 @@ const sendOTPEmail = async (email, otp) => {
       socketTimeout: 10000,
 
     });
-
+  console.log("Transporter created");
 
     await transporter.sendMail({
 
