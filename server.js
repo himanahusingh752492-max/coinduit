@@ -9,27 +9,16 @@ const axios = require("axios");
 
 const otpStore = {};
 const nodemailer = require("nodemailer");
-
 const sendOTPEmail = async (email, otp) => {
   try {
 
     const transporter = nodemailer.createTransport({
 
-      host: "smtp.gmail.com",
-      port: 587,
-      secure: false,
-
-      family: 4, // IPv4 force (Render ENETUNREACH fix)
-
-      requireTLS: true,
+      service: "gmail",
 
       auth: {
         user: process.env.EMAIL,
         pass: process.env.EMAIL_PASSWORD,
-      },
-
-      tls: {
-        rejectUnauthorized: false,
       },
 
     });
@@ -41,17 +30,17 @@ const sendOTPEmail = async (email, otp) => {
 
       to: email,
 
-      subject: "CoinDuit OTP Verification",
+      subject: "CoinDuit OTP",
 
-      text: `Your CoinDuit OTP is ${otp}. It is valid for 5 minutes.`,
+      text: `Your OTP is ${otp}. It is valid for 5 minutes.`,
 
     });
 
 
-    console.log("OTP sent successfully to:", email);
+    console.log("OTP sent successfully");
 
 
-  } catch (error) {
+  } catch(error) {
 
     console.log("OTP ERROR:", error.message);
 
