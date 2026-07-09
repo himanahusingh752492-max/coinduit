@@ -11,7 +11,7 @@ const otpStore = {};
 const nodemailer = require("nodemailer");
 
 const transporter = nodemailer.createTransport({
-  host: "smtp-relay.brevo.com",
+  host: "email-smtp.ap-south-1.amazonaws.com",
   port: 465,
   secure: false,
   family: 4,
@@ -32,15 +32,12 @@ const sendOTPEmail = async (email, otp) => {
 
     
 
-    await transporter.sendMail({
-
-      from: `"CoinDuit" <${process.env.SMTP_USER}>`,
-      to: email,
-      subject: "CoinDuit OTP",
-      text: `Your OTP is ${otp}. It is valid for 5 minutes.`,
-
-    });
-
+  await transporter.sendMail({
+  from: "coinduit657@gmail.com",
+  to: email,
+  subject: "CoinDuit OTP",
+  text: `Your OTP is ${otp}. Valid for 5 minutes.`,
+});
 
     console.log("OTP sent successfully");
 
