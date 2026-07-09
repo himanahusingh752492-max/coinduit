@@ -9,10 +9,8 @@ const axios = require("axios");
 
 const otpStore = {};
 const nodemailer = require("nodemailer");
-const sendOTPEmail = async (email, otp) => {
-  try {
 
-    const transporter = nodemailer.createTransport({
+const transporter = nodemailer.createTransport({
 
       host: process.env.SMTP_HOST,
       port: process.env.SMTP_PORT,
@@ -27,6 +25,16 @@ const sendOTPEmail = async (email, otp) => {
 
     });
 
+const sendOTPEmail = async (email, otp) => {
+  console.log(
+  process.env.SMTP_HOST,
+  process.env.SMTP_PORT,
+  process.env.SMTP_USER
+);
+  try {
+    
+
+    
 
     await transporter.sendMail({
 
@@ -295,6 +303,7 @@ app.post("/reward/daily", async (req, res) => {
 });
 
 app.post("/forgot/send-otp", async (req, res) => {
+  console.log("SMTP:", process.env.SMTP_HOST, process.env.SMTP_PORT, process.env.SMTP_USER);
   try {
     const { email } = req.body;
 
