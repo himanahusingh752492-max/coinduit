@@ -21,6 +21,10 @@ const sendOTPEmail = async (email, otp) => {
         pass: process.env.EMAIL_PASSWORD,
       },
 
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 10000,
+
     });
 
 
@@ -37,7 +41,7 @@ const sendOTPEmail = async (email, otp) => {
     });
 
 
-    console.log("OTP sent successfully");
+    console.log("OTP sent successfully:", email);
 
 
   } catch(error) {
