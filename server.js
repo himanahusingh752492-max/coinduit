@@ -8,43 +8,54 @@ const app = express();
 const axios = require("axios");
 
 const otpStore = {};
+// const nodemailer = require("nodemailer");
 const nodemailer = require("nodemailer");
 
 const transporter = nodemailer.createTransport({
-  host: "email-smtp.ap-south-1.amazonaws.com",
-  port: 587,
-  secure: false,
-  family: 4,
+  host: process.env.SMTP_HOST,
+  port: Number(process.env.SMTP_PORT),
+  secure: Number(process.env.SMTP_PORT) === 465,
+
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
   },
+
+  connectionTimeout: 10000,
+  greetingTimeout: 10000,
+  socketTimeout: 10000,
 });
 
 const sendOTPEmail = async (email, otp) => {
-  console.log(
-  process.env.SMTP_HOST,
-  process.env.SMTP_PORT,
-  process.env.SMTP_USER
-);
   try {
-    
+    console.log("SMTP HOST:", process.env.SMTP_HOST);
+    console.log("SMTP PORT:", process.env.SMTP_PORT);
+    console.log("SMTP USER:", process.env.SMTP_USER);
 
-    
+    // SMTP connection check
+    await transporter.verify();
+    console.log("SMTP Connected");
 
-  await transporter.sendMail({
-  from: "coinduit657@gmail.com",
-  to: email,
-  subject: "CoinDuit OTP",
-  text: `Your OTP is ${otp}. Valid for 5 minutes.`,
-});
+    const info = await transporter.sendMail({
+      from: `"CoinDuit" <${process.env.SMTP_FROM}>`,
+      to: email,
+      subject: "CoinDuit OTP Verification",
+      text: `Your OTP is ${otp}. It is valid for 5 minutes.`,
+      html: `
+        <div style="font-family:Arial;padding:20px">
+          <h2>CoinDuit OTP</h2>
+          <p>Your verification code is:</p>
+          <h1 style="letter-spacing:5px">${otp}</h1>
+          <p>This OTP is valid for 5 minutes.</p>
+        </div>
+      `,
+    });
 
-    console.log("OTP sent successfully");
-
-  } catch(error) {
-
-    console.log("OTP ERROR:", error.message);
-
+    console.log("OTP SENT:", info.messageId);
+    return true;
+  } catch (error) {
+    console.error("SMTP ERROR:", error);
+    throw error;
   }
 };
 app.use(cors());
