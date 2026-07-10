@@ -11,19 +11,22 @@ const otpStore = {};
 // const nodemailer = require("nodemailer");
 const nodemailer = require("nodemailer");
 
+const nodemailer = require("nodemailer");
+
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT),
-  secure: Number(process.env.SMTP_PORT) === 465,
+  port: parseInt(process.env.SMTP_PORT, 10),
+  secure: false,          // 587 ke liye false
+  requireTLS: true,
 
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
   },
 
-  connectionTimeout: 10000,
-  greetingTimeout: 10000,
-  socketTimeout: 10000,
+  connectionTimeout: 30000,
+  greetingTimeout: 30000,
+  socketTimeout: 30000,
 });
 
 const sendOTPEmail = async (email, otp) => {
@@ -31,10 +34,11 @@ const sendOTPEmail = async (email, otp) => {
     console.log("SMTP HOST:", process.env.SMTP_HOST);
     console.log("SMTP PORT:", process.env.SMTP_PORT);
     console.log("SMTP USER:", process.env.SMTP_USER);
+    console.log("SMTP FROM:", process.env.SMTP_FROM);
 
-    // SMTP connection check
+    // SMTP connection verify
     await transporter.verify();
-    console.log("SMTP Connected");
+    console.log("SMTP Connected Successfully");
 
     const info = await transporter.sendMail({
       from: `"CoinDuit" <${process.env.SMTP_FROM}>`,
@@ -42,20 +46,21 @@ const sendOTPEmail = async (email, otp) => {
       subject: "CoinDuit OTP Verification",
       text: `Your OTP is ${otp}. It is valid for 5 minutes.`,
       html: `
-        <div style="font-family:Arial;padding:20px">
-          <h2>CoinDuit OTP</h2>
+        <div style="font-family:Arial,sans-serif;padding:20px">
+          <h2>CoinDuit OTP Verification</h2>
           <p>Your verification code is:</p>
-          <h1 style="letter-spacing:5px">${otp}</h1>
-          <p>This OTP is valid for 5 minutes.</p>
+          <h1 style="color:#22C55E;letter-spacing:5px">${otp}</h1>
+          <p>This OTP is valid for <b>5 minutes</b>.</p>
         </div>
       `,
     });
 
-    console.log("OTP SENT:", info.messageId);
+    console.log("Email Sent:", info.messageId);
     return true;
-  } catch (error) {
-    console.error("SMTP ERROR:", error);
-    throw error;
+
+  } catch (err) {
+    console.error("SMTP ERROR:", err);
+    throw err;
   }
 };
 app.use(cors());
