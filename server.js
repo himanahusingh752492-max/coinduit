@@ -12,59 +12,53 @@ const otpStore = {};
 
 
 const nodemailer = require("nodemailer");
+const nodemailer = require("nodemailer");
 
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: parseInt(process.env.SMTP_PORT, 10),
-  secure: false,          // 587 ke liye false
-  requireTLS: true,
-
+  service: "gmail",
   auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
+    user: process.env.EMAIL,
+    pass: process.env.EMAIL_PASSWORD,
   },
-
-  connectionTimeout: 30000,
-  greetingTimeout: 30000,
-  socketTimeout: 30000,
 });
+
 
 const sendOTPEmail = async (email, otp) => {
   try {
-    console.log("SMTP HOST:", process.env.SMTP_HOST);
-    console.log("SMTP PORT:", process.env.SMTP_PORT);
-    console.log("SMTP USER:", process.env.SMTP_USER);
-    console.log("SMTP FROM:", process.env.SMTP_FROM);
-
-    // SMTP connection verify
-    // await transporter.verify();
-    console.log("SMTP Connected Successfully");
 
     const info = await transporter.sendMail({
-      from: `"CoinDuit" <${process.env.SMTP_FROM}>`,
+      from: `"CoinDuit" <${process.env.EMAIL}>`,
       to: email,
       subject: "CoinDuit OTP Verification",
+
       text: `Your OTP is ${otp}. It is valid for 5 minutes.`,
+
       html: `
-        <div style="font-family:Arial,sans-serif;padding:20px">
+        <div style="font-family:Arial;padding:20px">
           <h2>CoinDuit OTP Verification</h2>
           <p>Your verification code is:</p>
-          <h1 style="color:#22C55E;letter-spacing:5px">${otp}</h1>
+
+          <h1 style="color:#22C55E;letter-spacing:5px">
+            ${otp}
+          </h1>
+
           <p>This OTP is valid for <b>5 minutes</b>.</p>
         </div>
       `,
     });
-  console.log("SMTP Connected Successfully");
+
+
     console.log("Email Sent:", info.messageId);
+
     return true;
 
-  } catch (err) {
-    console.error("SMTP ERROR:", err);
-      console.error("ERROR CODE:", err.code);
-  console.error("RESPONSE:", err.response);
 
-  console.error("ERROR MESSAGE:", err.message);
+  } catch (err) {
+
+    console.log("EMAIL ERROR:", err.message);
+
     throw err;
+
   }
 };
 app.use(cors());
