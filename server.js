@@ -13,59 +13,44 @@ const otpStore = {};
 
 
 const nodemailer = require("nodemailer");
+const { Resend } = require("resend");
 
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false,
-  requireTLS: true,
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-  auth: {
-    user: process.env.EMAIL,
-    pass: process.env.EMAIL_PASSWORD,
-  },
-  family: 4,
-  connectionTimeout: 30000,
-  greetingTimeout: 30000,
-  socketTimeout: 30000,
-});
 
 const sendOTPEmail = async (email, otp) => {
   try {
 
-    const info = await transporter.sendMail({
-      from: `"CoinDuit" <${process.env.EMAIL}>`,
+    const data = await resend.emails.send({
+      from: "CoinDuit <onboarding@resend.dev>",
       to: email,
       subject: "CoinDuit OTP Verification",
-
-      text: `Your OTP is ${otp}. It is valid for 5 minutes.`,
 
       html: `
         <div style="font-family:Arial;padding:20px">
           <h2>CoinDuit OTP Verification</h2>
+
           <p>Your verification code is:</p>
 
           <h1 style="color:#22C55E;letter-spacing:5px">
             ${otp}
           </h1>
 
-          <p>This OTP is valid for <b>5 minutes</b>.</p>
+          <p>This OTP is valid for 5 minutes.</p>
         </div>
       `,
     });
 
 
-    console.log("Email Sent:", info.messageId);
+    console.log("Email Sent:", data);
 
     return true;
 
+  } catch(error){
 
-  } catch (err) {
+    console.log("RESEND ERROR:", error);
 
-    console.log("EMAIL ERROR:", err.message);
-
-    throw err;
-
+    throw error;
   }
 };
 app.use(cors());
