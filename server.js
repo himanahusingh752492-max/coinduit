@@ -54,12 +54,16 @@ const sendOTPEmail = async (email, otp) => {
         </div>
       `,
     });
-
+  console.log("SMTP Connected Successfully");
     console.log("Email Sent:", info.messageId);
     return true;
 
   } catch (err) {
     console.error("SMTP ERROR:", err);
+      console.error("ERROR CODE:", err.code);
+  console.error("RESPONSE:", err.response);
+
+  console.error("ERROR MESSAGE:", err.message);
     throw err;
   }
 };
