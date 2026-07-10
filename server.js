@@ -400,15 +400,16 @@ app.post("/reward/spin", async (req, res) => {
   }
 });
 // const axios = require("axios");
-
 app.post("/signup/send-otp", async (req, res) => {
   try {
     const { email } = req.body;
-console.log(email)
+
     const exist = await User.findOne({ email });
 
     if (exist) {
-      return res.status(400).json({ message: "Email already registered" });
+      return res.status(400).json({
+        message: "Email already registered",
+      });
     }
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -420,11 +421,20 @@ console.log(email)
 
     await sendOTPEmail(email, otp);
 
-    res.json({ message: "OTP sent to email successfully" });
+    return res.json({
+      success: true,
+      message: "OTP sent successfully",
+    });
 
   } catch (error) {
-    console.log("OTP ERROR:", error.message);
-    res.status(500).json({ message: "OTP send failed" });
+
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to send OTP",
+      error: error.message,
+    });
   }
 });
 app.post("/referral/apply", async (req, res) => {
