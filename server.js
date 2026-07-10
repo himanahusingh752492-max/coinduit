@@ -8,8 +8,8 @@ const app = express();
 const axios = require("axios");
 
 const otpStore = {};
-// const nodemailer = require("nodemailer");
-const nodemailer = require("nodemailer");
+
+
 
 const nodemailer = require("nodemailer");
 
@@ -37,7 +37,7 @@ const sendOTPEmail = async (email, otp) => {
     console.log("SMTP FROM:", process.env.SMTP_FROM);
 
     // SMTP connection verify
-    await transporter.verify();
+    // await transporter.verify();
     console.log("SMTP Connected Successfully");
 
     const info = await transporter.sendMail({
