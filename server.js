@@ -60,7 +60,6 @@ mongoose
   .connect(process.env.MONGO_URL)
   .then(() => console.log("MongoDB Connected"))
   .catch((err) => console.log(err));
-
 const UserSchema = new mongoose.Schema(
   {
     username: String,
@@ -73,6 +72,26 @@ const UserSchema = new mongoose.Schema(
     referredBy: { type: String, default: null },
 
     dailyBonusDate: String,
+
+    // Rewarded Ad Limit
+    rewardedAdsToday: {
+      type: Number,
+      default: 0,
+    },
+    rewardedAdsDate: {
+      type: String,
+      default: "",
+    },
+
+    // Spin Limit
+    spinsToday: {
+      type: Number,
+      default: 0,
+    },
+    spinsDate: {
+      type: String,
+      default: "",
+    },
 
     withdraws: [
       {
@@ -94,7 +113,6 @@ const UserSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-
 const User = mongoose.model("User", UserSchema);
 
 const makeReferralCode = (email) => {
@@ -189,7 +207,6 @@ app.get("/user/:email", async (req, res) => {
     res.status(500).json(error);
   }
 });
-
 /* Watch Ad Reward */
 app.post("/reward/ad", async (req, res) => {
   try {
@@ -197,11 +214,7 @@ app.post("/reward/ad", async (req, res) => {
 
     const coins = 3;
 
-    const user = await User.findOneAndUpdate(
-      { email },
-      { $inc: { coins } },
-      { new: true }
-    );
+    const user = await User.findOne({ email });
 
     if (!user) {
       return res.status(404).json({
@@ -209,19 +222,45 @@ app.post("/reward/ad", async (req, res) => {
       });
     }
 
+    const today = new Date().toISOString().split("T")[0];
+
+    // New day => reset counter
+    if (user.rewardedAdsDate !== today) {
+      user.rewardedAdsDate = today;
+      user.rewardedAdsToday = 0;
+    }
+
+    // Daily limit
+    if (user.rewardedAdsToday >= 13) {
+      return res.status(400).json({
+        success: false,
+        message: "Daily rewarded ad limit reached.",
+        adsLeft: 0,
+      });
+    }
+
+    // Give reward
+    user.rewardedAdsToday += 1;
+    user.coins += coins;
+
+    await user.save();
+
     res.json({
+      success: true,
       message: "Ad reward added",
       coinsAdded: coins,
       totalCoins: user.coins,
+      adsWatched: user.rewardedAdsToday,
+      adsLeft: 13 - user.rewardedAdsToday,
     });
   } catch (error) {
     res.status(500).json({
+      success: false,
       message: "Ad reward error",
-      error,
+      error: error.message,
     });
   }
 });
-
 /* Daily Bonus */
 app.post("/reward/daily", async (req, res) => {
   try {
@@ -363,34 +402,59 @@ app.post("/forgot/verify-reset", async (req, res) => {
   }
 });
 /* Spin Reward */
+/* Spin Reward */
 app.post("/reward/spin", async (req, res) => {
   try {
     const { email } = req.body;
 
-    const rewards = [2, 1, 2, 1, 1, 1, 2, 1, 5];
+    const rewards = [5, 4, 2, 3, 5, 0, 4, 1, 5];
     const coins = rewards[Math.floor(Math.random() * rewards.length)];
 
-    const user = await User.findOneAndUpdate(
-      { email },
-      { $inc: { coins } },
-      { new: true }
-    );
+    const user = await User.findOne({ email });
 
     if (!user) {
       return res.status(404).json({
+        success: false,
         message: "User not found",
       });
     }
 
+    const today = new Date().toISOString().split("T")[0];
+
+    // New day => reset counter
+    if (user.spinsDate !== today) {
+      user.spinsDate = today;
+      user.spinsToday = 0;
+    }
+
+    // Daily limit
+    if (user.spinsToday >= 10) {
+      return res.status(400).json({
+        success: false,
+        message: "Daily spin limit reached.",
+        spinsLeft: 0,
+      });
+    }
+
+    // Give reward
+    user.spinsToday += 1;
+    user.coins += coins;
+
+    await user.save();
+
     res.json({
+      success: true,
       message: "Spin reward added",
       coinsAdded: coins,
       totalCoins: user.coins,
+      spinsToday: user.spinsToday,
+      spinsLeft: 10 - user.spinsToday,
     });
   } catch (error) {
     res.status(500).json({
+      success: false,
       message: "Spin reward error",
-      error,
+      error: error.message,
     });
   }
 });
@@ -430,6 +494,46 @@ app.post("/signup/send-otp", async (req, res) => {
       message: "Failed to send OTP",
       error: error.message,
     });
+  }
+});
+app.post("/referral/share", async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found"
+      });
+    }
+
+
+    if (user.referralShares >= 2) {
+      return res.status(400).json({
+        message: "You can share referral only 2 times"
+      });
+    }
+
+
+    user.referralShares += 1;
+
+    await user.save();
+
+
+    res.json({
+      success: true,
+      message: "Referral shared",
+      remainingShares: 2 - user.referralShares
+    });
+
+
+  } catch(error) {
+
+    res.status(500).json({
+      message:"Referral share error"
+    });
+
   }
 });
 app.post("/referral/apply", async (req, res) => {
