@@ -22,7 +22,7 @@ const sendOTPEmail = async (email, otp) => {
   try {
 
     const data = await resend.emails.send({
-      from: "CoinDuit <onboarding@resend.dev>",
+      from: "CoinDuit <noreply@coinduit.xyz>",
       to: email,
       subject: "CoinDuit OTP Verification",
 
