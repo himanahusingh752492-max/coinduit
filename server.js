@@ -2,6 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 require("dotenv").config();
+const AppVersion = require("./models/AppVersion");
 const port = process.env.PORT || 4000 ;
 
 const app = express();
@@ -693,8 +694,31 @@ app.get("/withdraw-history/:email", async (req, res) => {
     });
   }
 });
+app.get("/app/version", async (req, res) => {
 
+  try {
 
+    const version = await AppVersion.findOne();
+
+    if (!version) {
+
+      return res.status(404).json({
+        message: "Version not found"
+      });
+
+    }
+
+    res.json(version);
+
+  } catch(err){
+
+    res.status(500).json({
+      message:"Server Error"
+    });
+
+  }
+
+});
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
