@@ -232,7 +232,7 @@ app.post("/reward/ad", async (req, res) => {
     }
 
     // Daily limit
-    if (user.rewardedAdsToday >= 13) {
+    if (user.rewardedAdsToday >= 6) {
       return res.status(400).json({
         success: false,
         message: "Daily rewarded ad limit reached.",
@@ -252,7 +252,7 @@ app.post("/reward/ad", async (req, res) => {
       coinsAdded: coins,
       totalCoins: user.coins,
       adsWatched: user.rewardedAdsToday,
-      adsLeft: 13 - user.rewardedAdsToday,
+      adsLeft: 6 - user.rewardedAdsToday,
     });
   } catch (error) {
     res.status(500).json({
@@ -429,7 +429,7 @@ app.post("/reward/spin", async (req, res) => {
     }
 
     // Daily limit
-    if (user.spinsToday >= 10) {
+    if (user.spinsToday >= 6) {
       return res.status(400).json({
         success: false,
         message: "Daily spin limit reached.",
@@ -449,7 +449,7 @@ app.post("/reward/spin", async (req, res) => {
       coinsAdded: coins,
       totalCoins: user.coins,
       spinsToday: user.spinsToday,
-      spinsLeft: 10 - user.spinsToday,
+      spinsLeft: 6 - user.spinsToday,
     });
   } catch (error) {
     res.status(500).json({
